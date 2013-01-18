@@ -10,8 +10,8 @@ module Spree
           #     - we are sending the block value as a method
           #     - Spree::Search::Base is using method_missing() to return the param values
           conf.display_facets.each do |name|
-            with("#{name}_facet", send(name)) if send(name).present?
-            facet("#{name}_facet")
+            with("#{name}", send(name)) if send(name).present?
+            facet("#{name}")
           end
 
           with(:price, Range.new(price.split('-').first, price.split('-').last)) if price
@@ -55,7 +55,7 @@ module Spree
         @properties[:order] = params[:order] || :desc
 
         Spree::Search.configuration.display_facets.each do |name|
-          @properties[name] ||= params["#{name}_facet"]
+          @properties[name] ||= params["#{name}"]
         end
       end
 
