@@ -28,6 +28,12 @@ module Spree
           facet(:taxon_ids)
           with(:taxon_ids, send(:taxon).id) if send(:taxon)
 
+          if send(:sort) == :score
+            order_by :themesort
+            order_by :position
+            order_by :subposition
+          end
+          
           order_by sort.to_sym, order.to_sym
           with(:is_active, true)
           keywords(query)
@@ -68,13 +74,6 @@ module Spree
 
           #facet :saletype
           #with(:saletype, send(:saletype)) if send(:saletype)
-          #with(:featured, true)
-
-          if send(:sort) == :score
-            order_by :themesort
-            order_by :position
-            order_by :subposition
-          end
 
           order_by :themesort
           with(:is_active, true)
