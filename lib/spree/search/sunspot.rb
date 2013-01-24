@@ -1,7 +1,26 @@
 module Spree
   module Search
     class Sunspot < defined?(Spree::Search::MultiDomain) ? Spree::Search::MultiDomain : Spree::Core::Search::Base
+
       def retrieve_products
+        retrieve_indexed.results
+      end
+
+      def retrieve_hits
+        retrieve_indexed.hits
+      end
+
+      def retrieve_themes
+        retrieve_themes.results
+      end
+
+      def retrieve_theme_hits
+        retrieve_themes.hits
+      end
+
+      protected
+
+      def retrieve_indexed
         conf = Spree::Search.configuration
 
         # send(name) looks in @properties
@@ -33,16 +52,16 @@ module Spree
             order_by :position
             order_by :subposition
           end
-          
+
           order_by sort.to_sym, order.to_sym
           with(:is_active, true)
           keywords(query)
           paginate(:page => page, :per_page => per_page)
         end
 
-        self.sunspot.results
+        self.sunspot
       end
-      
+
       def retrieve_themes
         conf = Spree::Search.configuration
 
@@ -74,6 +93,7 @@ module Spree
 
           #facet :saletype
           #with(:saletype, send(:saletype)) if send(:saletype)
+          #with(:featured, true)
 
           order_by :themesort
           with(:is_active, true)
@@ -83,10 +103,8 @@ module Spree
           paginate(:page => 1, :per_page => 180)
         end
 
-        self.sunspot.results
+        self.sunspot
       end
-
-      protected
 
       def prepare(params)
         # super copies over :taxon and other variables into properties
