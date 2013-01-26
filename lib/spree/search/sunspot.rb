@@ -3,19 +3,19 @@ module Spree
     class Sunspot < defined?(Spree::Search::MultiDomain) ? Spree::Search::MultiDomain : Spree::Core::Search::Base
 
       def retrieve_products
-        retrieve_indexed.results
-      end
-
-      def retrieve_hits
         retrieve_indexed.hits
       end
 
-      def retrieve_themes
-        retrieve_themes.results
+      def retrieve_hits_results
+        retrieve_indexed.results
       end
 
-      def retrieve_theme_hits
+      def retrieve_themes
         retrieve_themes.hits
+      end
+
+      def retrieve_theme_results
+        retrieve_themes.results
       end
 
       protected
