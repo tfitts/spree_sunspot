@@ -2,23 +2,67 @@ module Spree
   module Search
     class Sunspot < defined?(Spree::Search::MultiDomain) ? Spree::Search::MultiDomain : Spree::Core::Search::Base
 
+
       def retrieve_products
         retrieve_indexed.hits
       end
 
-      def retrieve_hits_results
+      def retrieve_product_results
         retrieve_indexed.results
       end
 
       def retrieve_themes
-        retrieve_themes.hits
+        retrieve_indexed_themes.hits
       end
 
       def retrieve_theme_results
-        retrieve_themes.results
+        retrieve_indexed_themes.results
       end
 
+
       protected
+
+      def retrieve_productss
+        conf = Spree::Search.configuration
+
+        # send(name) looks in @properties
+        @properties[:sunspot] = ::Sunspot.search(Spree::Product) do
+          # This is a little tricky to understand
+          #     - we are sending the block value as a method
+          #     - Spree::Search::Base is using method_missing() to return the param values
+          conf.display_facets.each do |name|
+            with("#{name}", send(name)) if send(name).present?
+            facet("#{name}")
+          end
+
+          with(:price, Range.new(price.split('-').first, price.split('-').last)) if price
+          facet(:price) do
+            conf.price_ranges.each do |range|
+              row(range) do
+                with(:price, Range.new(range.split('-').first, range.split('-').last))
+              end
+            end
+
+            # TODO add greater than range
+          end
+
+          facet(:taxon_ids)
+          with(:taxon_ids, send(:taxon).id) if send(:taxon)
+
+          if send(:sort) == :score
+            order_by :themesort
+            order_by :position
+            order_by :subposition
+          end
+
+          order_by sort.to_sym, order.to_sym
+          with(:is_active, true)
+          keywords(query)
+          paginate(:page => page, :per_page => per_page)
+        end
+
+        self.sunspot.results
+      end
 
       def retrieve_indexed
         conf = Spree::Search.configuration
@@ -62,7 +106,7 @@ module Spree
         self.sunspot
       end
 
-      def retrieve_themes
+      def retrieve_indexed_themes
         conf = Spree::Search.configuration
 
         # send(name) looks in @properties
